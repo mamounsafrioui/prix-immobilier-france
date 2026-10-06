@@ -1,0 +1,17 @@
+# Données (trop volumineuses pour GitHub)
+data/raw/*
+data/processed/*
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+
+# Python
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+.venv/
+venv/
+.env
+
+# macOS / éditeurs
+.DS_Store
+.vscode/
