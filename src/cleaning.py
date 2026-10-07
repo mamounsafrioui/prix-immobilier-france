@@ -21,6 +21,10 @@ COLUMNS = [
 
 LOGEMENTS = ["Appartement", "Maison"]
 
+# zone qui englobe largement Paris et la petite couronne
+LAT_IDF = (48.70, 49.00)
+LON_IDF = (2.10, 2.65)
+
 
 def load_raw(raw_dir: Path = RAW_DIR) -> pd.DataFrame:
     files = sorted(raw_dir.glob("dvf_*.csv.gz"))
@@ -62,7 +66,9 @@ def remove_outliers(df: pd.DataFrame,
                     q_low: float = 0.01, q_high: float = 0.99) -> pd.DataFrame:
     # surface entre 9 m2 (minimum légal) et 500 m2
     # prix au m2 entre les percentiles 1 et 99, par département et type de bien
+    # quelques ventes ont des coordonnées GPS fausses (latitude à 83° par exemple) : on les enlève
     df = df.dropna(subset=["valeur_fonciere", "surface_reelle_bati", "longitude", "latitude"])
+    df = df[df["latitude"].between(*LAT_IDF) & df["longitude"].between(*LON_IDF)]
     df = df[df["surface_reelle_bati"].between(surface_min, surface_max)]
 
     groups = df.groupby(["code_departement", "type_local"])["prix_m2"]
