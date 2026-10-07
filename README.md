@@ -2,6 +2,8 @@
 
 Analyse des ventes immobilières à Paris et en petite couronne à partir des données DVF (Demandes de Valeurs Foncières), publiées par la DGFiP sur data.gouv.fr. Le projet se termine par un modèle qui estime le prix d'un appartement à partir de sa surface, de son nombre de pièces, de sa localisation et de la date de vente.
 
+**Application en ligne :** [prix-immobilier-idf.streamlit.app](https://prix-immobilier-idf.streamlit.app)
+
 **Résultat principal :** le modèle estime la moitié des appartements avec moins de **12,2 % d'erreur**, et 72 % à moins de 20 % près.
 
 ## Données
@@ -101,7 +103,7 @@ Une version interactive (zoom, prix au survol) est générée avec Folium par `p
 
 ## Application d'estimation
 
-`app.py` est une petite application Streamlit : on entre une adresse, une surface et un nombre de pièces, et elle renvoie une estimation du prix. L'adresse est géolocalisée avec l'API Adresse de l'IGN (gratuite, sans clé), puis le modèle calcule le prix du quartier et l'estimation.
+[`app.py`](https://prix-immobilier-idf.streamlit.app) est une petite application Streamlit, en ligne sur Streamlit Community Cloud : on entre une adresse, une surface et un nombre de pièces, et elle renvoie une estimation du prix. L'adresse est géolocalisée avec l'API Adresse de l'IGN (gratuite, sans clé), puis le modèle calcule le prix du quartier et l'estimation.
 
 ```bash
 streamlit run app.py
@@ -149,7 +151,7 @@ Ensuite, lancer les notebooks dans l'ordre : `01_exploration.ipynb` puis `02_mod
 - [x] Modèle de prédiction
 - [x] Carte des prix au m²
 - [x] Application d'estimation
-- [ ] Mettre l'application en ligne (Streamlit Community Cloud)
+- [x] Mettre l'application en ligne
 - [ ] Valider le modèle sur une période future (entraînement sur 2021-2024, test sur 2025)
 
 ## Outils
