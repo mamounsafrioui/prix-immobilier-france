@@ -1,8 +1,8 @@
 # Prix de l'immobilier en Île-de-France
 
-Analyse des ventes immobilières à Paris et en petite couronne à partir des données DVF (Demandes de Valeurs Foncières), publiées par la DGFiP sur data.gouv.fr. L'objectif à terme est d'avoir un modèle capable d'estimer le prix d'un appartement à partir de sa surface, de son nombre de pièces et de sa localisation.
+Analyse des ventes immobilières à Paris et en petite couronne à partir des données DVF (Demandes de Valeurs Foncières), publiées par la DGFiP sur data.gouv.fr. Le projet se termine par un modèle qui estime le prix d'un appartement à partir de sa surface, de son nombre de pièces, de sa localisation et de la date de vente.
 
-**Avancement :** l'analyse exploratoire est terminée. La partie modélisation est en cours.
+**Résultat principal :** le modèle estime la moitié des appartements avec moins de **12,2 % d'erreur**, et 72 % à moins de 20 % près.
 
 ## Données
 
@@ -58,7 +58,37 @@ Ce sont les départements les plus chers qui ont le plus baissé. La chute corre
 
 Le prix médian au m² est de 5 110 € pour les maisons et de 7 647 € pour les appartements. On pourrait conclure que les maisons sont moins chères, mais c'est un effet de composition : les maisons se trouvent presque toutes en petite couronne, là où les prix sont plus bas, alors qu'à Paris on ne vend quasiment que des appartements. Pour comparer correctement, il faut raisonner à localisation égale, ce que fera le modèle.
 
+### À Paris, l'écart entre arrondissements reste important
+
+Le 6e (14 286 €/m²) et le 7e (14 014 €/m²) sont les plus chers. À l'autre bout, le 19e (8 622 €/m²) et le 20e (8 854 €/m²) coûtent environ 40 % de moins. Les arrondissements du centre et de la rive gauche sont tous au-dessus de 12 000 €/m², ceux du nord-est en dessous de 10 000 €/m².
+
 ![Prix par arrondissement](reports/figures/prix_arrondissements.png)
+
+## Modélisation
+
+Notebook : `notebooks/02_modelisation.ipynb`. Je me limite aux appartements (321 366 ventes), découpés en 80 % pour l'entraînement et 20 % pour le test. La cible est le log du prix, pour que le modèle soit bon en pourcentage sur les petits comme sur les grands biens.
+
+La variable la plus utile n'existe pas dans les données, je l'ai construite : le **prix au m² des 30 ventes les plus proches** (`prix_quartier`). Pour éviter toute fuite de données, elle est calculée en validation croisée sur le train, et uniquement à partir du train pour le test.
+
+| Méthode | Erreur médiane | MAE | R² |
+|---|---|---|---|
+| Prix m² médian de la commune × surface | 14,1 % | 84 243 € | 0,826 |
+| Régression linéaire | 32,2 % | 173 520 € | 0,450 |
+| Régression linéaire + prix du quartier | 13,0 % | 85 145 € | 0,795 |
+| Random Forest | 12,4 % | 80 833 € | 0,816 |
+| Gradient boosting | **12,2 %** | **80 603 €** | 0,806 |
+
+![Comparaison des modèles](reports/figures/comparaison_modeles.png)
+
+Ce que j'en retiens :
+- **La méthode « agent immobilier » est un point de comparaison exigeant.** Prix au m² de la commune × surface donne déjà 14,1 % d'erreur médiane. Le gradient boosting gagne 2 points : c'est réel, mais modeste.
+- **Le travail sur les variables compte plus que le choix du modèle.** Avec `prix_quartier`, une simple régression linéaire passe de 32 % à 13 % d'erreur.
+- **Je juge les modèles sur l'erreur médiane plutôt que sur le R².** Le R² en euros est dominé par les biens les plus chers et ne départage pas les modèles ici.
+- **Paris est le plus difficile à prédire** : 14,4 % d'erreur médiane, contre 10 à 12 % en petite couronne. Les très petites (< 25 m²) et très grandes (> 100 m²) surfaces aussi.
+
+![Importance des variables](reports/figures/importance_variables.png)
+
+Limites : les DVF ne disent rien de l'étage, de l'état du bien ou des équipements, et contiennent des ventes atypiques (viager, ventes familiales) impossibles à repérer. Une partie de l'erreur est donc incompressible avec ces données. Le découpage train/test étant aléatoire, il faudrait aussi valider sur une période future pour un usage réel.
 
 ## Organisation du projet
 
@@ -68,10 +98,12 @@ prix-immobilier-france/
 │   ├── raw/              # fichiers DVF téléchargés (non versionnés)
 │   └── processed/        # données nettoyées (non versionnées)
 ├── notebooks/
-│   └── 01_exploration.ipynb
+│   ├── 01_exploration.ipynb
+│   └── 02_modelisation.ipynb
 ├── src/
 │   ├── download_data.py
 │   └── cleaning.py
+├── models/              # modèle entraîné (non versionné)
 ├── reports/figures/
 ├── requirements.txt
 └── README.md
@@ -90,17 +122,17 @@ pip install -r requirements.txt
 python src/download_data.py
 ```
 
-Ensuite, ouvrir `notebooks/01_exploration.ipynb`.
+Ensuite, lancer les notebooks dans l'ordre : `01_exploration.ipynb` puis `02_modelisation.ipynb`.
 
 ## Suite du projet
 
-- [ ] Modèle de prédiction : régression linéaire comme base, puis Random Forest et XGBoost
+- [x] Modèle de prédiction
 - [ ] Carte des prix au m² avec Folium
 - [ ] Petite application Streamlit pour estimer un bien
 
 ## Outils
 
-Python, Pandas, NumPy, Matplotlib, Seaborn, Scikit-learn, XGBoost, Folium, Streamlit
+Python, Pandas, NumPy, Matplotlib, Seaborn, Scikit-learn, Folium, Streamlit
 
 ---
 
