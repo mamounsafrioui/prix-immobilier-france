@@ -4,6 +4,9 @@ data/processed/*
 !data/raw/.gitkeep
 !data/processed/.gitkeep
 
+# Modèles entraînés
+models/
+
 # Python
 __pycache__/
 *.pyc
